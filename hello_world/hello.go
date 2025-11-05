@@ -1,12 +1,12 @@
 package main
 
-import "fmt"
+const englishHelloPrefix = "Hello, "
 
 func Hello(who string) string {
 	if who == "" {
-		return "Hello, world"
+		return englishHelloPrefix + "world"
 	} else {
-		return fmt.Sprintf("Hello, %s", who)
+		return englishHelloPrefix + who
 	}
 }
 
