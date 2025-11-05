@@ -1,10 +1,17 @@
 package main
 
-const englishHelloPrefix = "Hello, "
+const spanish = "Spanish"
 
-func Hello(who string) string {
+const englishHelloPrefix = "Hello, "
+const spanishHelloPrefix = "Hola, "
+
+func Hello(who, language string) string {
 	if who == "" {
-		return englishHelloPrefix + "world"
+		who = "world"
+	}
+
+	if language == spanish {
+		return spanishHelloPrefix + who
 	} else {
 		return englishHelloPrefix + who
 	}
