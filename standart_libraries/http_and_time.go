@@ -1,12 +1,44 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 )
+
+type accessLog struct {
+	IP        string    `json:"ip"`
+	Method    string    `json:"method"`
+	Path      string    `json:"path"`
+	UserAgent string    `json:"user_agent"`
+	Time      time.Time `json:"time"`
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ip := clientIP(r)
+
+		entry := accessLog{
+			IP:        ip,
+			Method:    r.Method,
+			Path:      r.URL.Path,
+			UserAgent: r.UserAgent(),
+			Time:      time.Now(),
+		}
+
+		b, err := json.Marshal(entry)
+		if err != nil {
+			log.Printf(`{"level":"error","msg":"marshal log failed","err":%q}`, err)
+		} else {
+			log.Println(string(b))
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func clientIP(r *http.Request) string {
 	xff := r.Header.Get("X-Forwarded-For")
@@ -43,6 +75,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handler)
+
+	logged := loggingMiddleware(mux)
+	log.Println(`{"level":"info","msg":"listening","addr":":8080"}`)
+	log.Fatal(http.ListenAndServe(":8080", logged))
 }
