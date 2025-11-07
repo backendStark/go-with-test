@@ -17,6 +17,16 @@ type accessLog struct {
 	Time      time.Time `json:"time"`
 }
 
+type timeJSON struct {
+	DayOfWeek  string `json:"day_of_week"`
+	DayOfMonth int    `json:"day_of_month"`
+	Month      string `json:"month"`
+	Year       int    `json:"year"`
+	Hour       int    `json:"hour"`
+	Minute     int    `json:"minute"`
+	Second     int    `json:"second"`
+}
+
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ip := clientIP(r)
@@ -69,6 +79,28 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	timeNow := time.Now()
+
+	accept := r.Header.Get("Accept")
+
+	if strings.Contains(accept, "application/json") {
+		payload := timeJSON{
+			DayOfWeek:  timeNow.Weekday().String(),
+			DayOfMonth: timeNow.Day(),
+			Month:      timeNow.Month().String(),
+			Year:       timeNow.Year(),
+			Hour:       timeNow.Hour(),
+			Minute:     timeNow.Minute(),
+			Second:     timeNow.Second(),
+		}
+
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			http.Error(w, "failed to encode json", http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 	w.Write([]byte(timeNow.Format(time.RFC3339)))
