@@ -118,3 +118,13 @@ func TestHandler_RejectsNonGETMethods(t *testing.T) {
 		})
 	}
 }
+
+func TestClientIP_ExtractFromXForwardedFor(t *testing.T) {
+	req := httptest.NewRequest("GET", "http://localhost:8080", nil)
+	req.Header.Set("X-Forwarded-For", "203.0.113.1, 198.51.100.1, 192.0.2.1")
+	ip := clientIP(req)
+	expected := "203.0.113.1"
+	if ip != expected {
+		t.Errorf("Expected IP %q, but got: %q", expected, ip)
+	}
+}
