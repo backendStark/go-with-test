@@ -89,5 +89,32 @@ func TestHandler_ReturnsPlainText(t *testing.T) {
 	if ts.Hour() == 0 && ts.Minute() == 0 && ts.Second() == 0 {
 		t.Error("Expected non-zero time components (hour/minute/second)")
 	}
+}
 
+func TestHandler_RejectsNonGETMethods(t *testing.T) {
+	testCases := []struct {
+		name   string
+		method string
+	}{
+		{name: "POST method", method: "POST"},
+		{name: "PUT method", method: "PUT"},
+		{name: "DELETE method", method: "DELETE"},
+		{name: "PATCH method", method: "PATCH"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(tc.method, "http://localhost:8080", nil)
+			w := httptest.NewRecorder()
+
+			t.Logf("Testing method: %s", req.Method)
+
+			handler(w, req)
+
+			resp := w.Result()
+			if resp.StatusCode != 405 {
+				t.Errorf("Expected status 405 for %s, but got: %d", tc.method, resp.StatusCode)
+			}
+		})
+	}
 }
