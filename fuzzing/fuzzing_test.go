@@ -34,3 +34,27 @@ func Test_ParseUserInput_Success(t *testing.T) {
 		})
 	}
 }
+
+func FuzzParseUserInput(f *testing.F) {
+	f.Add("dmitrii:30")
+	f.Add("raul :31")
+	f.Add("nikita")
+	f.Add("tanya:30:somethingnew")
+	f.Add("lev:abv")
+	f.Add("volodya:-45")
+	f.Add("kostya:0")
+	f.Add(":100")
+	f.Add(":49")
+
+	f.Fuzz(func(t *testing.T, input string) {
+		res, err := ParseUserInput(input)
+
+		if err == nil && res == nil {
+			t.Errorf("got nil result with no error for input %q", input)
+		}
+
+		if res != nil && res.Username == "" {
+			t.Errorf("got empty username in valid result for input %q", res)
+		}
+	})
+}
