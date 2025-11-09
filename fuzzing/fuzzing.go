@@ -7,8 +7,8 @@ import (
 )
 
 type User struct {
-	username string
-	age      int
+	Username string
+	Age      int
 }
 
 func ParseUserInput(input string) (*User, error) {
@@ -35,7 +35,7 @@ func ParseUserInput(input string) (*User, error) {
 	}
 
 	return &User{
-		username: trimmedUsername,
-		age:      age,
+		Username: trimmedUsername,
+		Age:      age,
 	}, nil
 }
